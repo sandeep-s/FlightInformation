@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head ng-app="myapp">
+<meta charset="ISO-8859-1">
+<title>Flight Info Mgmt Portal</title>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+</head>
+<body ng-controller="flightInfoController">
+
+<table cellpadding="2" cellspacing="2" border="1">
+
+	<tr>
+		<th>Origin airport</th>
+		<th>Destination airport</th>			
+		<th>Departure time</th>
+		<th>Arrival time</th>
+		<th>Flight number</th>	
+		<th>Carrier name</th>	
+	</tr>
+	
+	<tr ng-repeat="flightinfo in result">
+		<td>{{flightinfo.originAirport}}</td>
+		<td>{{flightinfo.destinationAirport}}</td>
+		<td>{{flightinfo.departureTime}}</td>
+		<td>{{flightinfo.arrivalTime}}</td>
+		<td>{{flightinfo.flightNumber}}</td>
+		<td>{{flightinfo.carrierName}}</td>
+		<td>
+			<a href="#" ng-click="del(flightinfo.id)">Delete</a> |
+			<a href="#" ng-click="edit(flightinfo)">Edit</a>
+		</td>		
+	</tr>
+
+</table>
+
+<br>
+
+<fieldset>
+	<legend>Flight Information</legend>
+		<table cellpadding="2" cellspacing="2">
+			<tr>
+				<td>Origin airport</td>
+				<td><input type="text" ng-model="flightinfo.originAirport"/></td>
+			</tr>
+			<tr>
+				<td>Destination airport</td>
+				<td><input type="text" ng-model="flightinfo.destinationAirport"/></td>
+			</tr>
+			<tr>
+				<td>Departure time</td>
+				<td><input type="text" ng-model="flightinfo.departureTime"/></td>
+			</tr>
+			<tr>
+				<td>Arrival time</td>
+				<td><input type="text" ng-model="flightinfo.arrivalTime"/></td>
+			</tr>
+			<tr>
+				<td>Flight number</td>
+				<td><input type="text" ng-model="flightinfo.flightNumber"/></td>
+			</tr>
+			<tr>
+				<td>Carrier name</td>
+				<td><input type="text" ng-model="flightinfo.carrierName"/></td>
+			</tr>
+			<tr>
+				<td>&nbsp;</td>
+				<td>
+					<input type="button" value="Add" ng-click="add()"/>
+					<input type="button" value="Update" ng-click="update()"/>
+				</td>
+			</tr>			
+		</table>
+</fieldset>
+
+<script type="text/javascript">
+	var myapp = angular.module('myapp',[]);	
+		myap.config(['$httpProvider', function ($httpProvider) {
+			$httpProvider.defaults.useXDomain = true;
+			delete $httpProvider.defaults.headers.common['X-Requested-With'];
+		}				
+	]);
+	
+	myapp.controller('flightInfoController', function($scope, $http) {		
+		$scope.base_url = 'http://localhost:8080/FlightInfoMgmt_Server/rest/Flightinfo';		
+		$http.get($scope.base_url + 'findall').success(function response) {
+			$scope.result = response.flightinfo;
+		});
+	
+		//add or create
+		$scope.add = function() {
+			/* var data = {
+				originAirport: 'MAS'
+				destinationAirport: 'AMS'
+				departureTime: '01:00'
+				arrivalTime: '23:00'
+				flightNumber: '6E344'
+				carrierName: 'KLM'
+			}; */
+			
+			$http.post($scope.base_url + 'create', $scope.flightinfo).success(function(response) {
+				//alert(response);
+				$http.get($scope.base_url + 'findall').success(function response) {
+					$scope.result = response.flightinfo;
+				});
+			});
+		};
+		
+		
+		// delete
+		$scope.del = function(id) {
+			var result = confirm('Are you sure you want to delete the record?');
+			if(result===true) {
+				//alert('id');
+				$http.delete($scope.base_url + 'delete/' + id).success(function(response) {
+					//alert('successfully deleted!');
+				});
+			}	
+		};
+		
+		// edit
+		$scope.edit = function(flightinfo) {
+			$scope.flightinfo = flightinfo;	
+		};
+		
+		// update
+		$scope.update = function() {
+			$http.put($scope.base_url + 'edit', $scope.flightinfo).success(function response) {
+				//alert(response);
+			});
+		};
+	});
+</script>
+
+</body>
+</html>
